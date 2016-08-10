@@ -1,0 +1,8 @@
+<resources>xmlns:tools="http://schemas.android.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    <style name="AppTheme.Translucent" parent="Base.AppTheme">
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+</resources>
