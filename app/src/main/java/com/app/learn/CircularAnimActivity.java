@@ -1,5 +1,6 @@
 package com.app.learn;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -28,6 +29,8 @@ public class CircularAnimActivity extends AppCompatActivity {
     Button mTestBtn;
     @BindView(R.id.test_2_btn)
     Button test2Btn;
+    @BindView(R.id.path_btn)
+    Button mPathBtn;
 
 
     @Override
@@ -54,7 +57,7 @@ public class CircularAnimActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.pie_view, R.id.test_1_btn, R.id.test_2_btn})
+    @OnClick({R.id.pie_view, R.id.test_1_btn, R.id.test_2_btn,R.id.path_btn})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.pie_view:
@@ -74,6 +77,9 @@ public class CircularAnimActivity extends AppCompatActivity {
                 break;
             case R.id.test_2_btn:
                 mPieView.setStartAngle(0);
+                break;
+            case R.id.path_btn:
+                startActivity(new Intent(CircularAnimActivity.this, PathActivity.class));
                 break;
         }
     }
