@@ -112,6 +112,7 @@ public class RadarView extends View {
         Path path = new Path();
         float x;
         float y;
+        valuePaint.setColor(getResources().getColor(R.color.radarColor));
         for (int i = 0; i < count; i ++) {
             x = (float) (centerX + radius * (datas[i] / maxValue) * Math.cos(angle * i));
             y = (float) (centerY + radius * (datas[i] / maxValue) * Math.sin(angle * i));
@@ -123,7 +124,7 @@ public class RadarView extends View {
             canvas.drawCircle(x, y, 10, valuePaint);
         }
         path.close();
-        valuePaint.setColor(getResources().getColor(R.color.colorAccent));
+        valuePaint.setColor(getResources().getColor(R.color.radarValueColor));
         valuePaint.setAlpha(200);
         canvas.drawPath(path, valuePaint);
     }

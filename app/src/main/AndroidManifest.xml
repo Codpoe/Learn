@@ -43,6 +43,10 @@
         </activity>
         <activity android:name=".RadarViewActivity">
         </activity>
+        <activity android:name=".BezierViewActivity">
+        </activity>
+        <activity android:name=".Bezier2ViewActivity">
+        </activity>
     </application>
 
 </manifest>

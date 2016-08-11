@@ -56,6 +56,18 @@
                 android:layout_height="wrap_content"
                 android:text="RadarView"/>
 
+            <Button
+                android:id="@+id/bezier_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="BezierView"/>
+
+            <Button
+                android:id="@+id/bezier2_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bezier2View"/>
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>

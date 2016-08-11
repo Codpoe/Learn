@@ -28,6 +28,10 @@ public class CircularAnimActivity extends AppCompatActivity {
     Button mPathBtn;
     @BindView(R.id.radar_view_btn)
     Button mRadarViewBtn;
+    @BindView(R.id.bezier_view_btn)
+    Button mBezierViewBtn;
+    @BindView(R.id.bezier2_view_btn)
+    Button mBezier2ViewBtn;
 
 
     @Override
@@ -54,7 +58,13 @@ public class CircularAnimActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.pie_view_btn,R.id.path_btn, R.id.radar_view_btn})
+    @OnClick({
+            R.id.pie_view_btn,
+            R.id.path_btn,
+            R.id.radar_view_btn,
+            R.id.bezier_view_btn,
+            R.id.bezier2_view_btn
+    })
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.pie_view_btn:
@@ -65,6 +75,12 @@ public class CircularAnimActivity extends AppCompatActivity {
                 break;
             case R.id.radar_view_btn:
                 startActivity(new Intent(CircularAnimActivity.this, RadarViewActivity.class));
+                break;
+            case R.id.bezier_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, BezierViewActivity.class));
+                break;
+            case R.id.bezier2_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, Bezier2ViewActivity.class));
                 break;
         }
     }
