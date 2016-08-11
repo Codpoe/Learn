@@ -4,5 +4,7 @@
     <color name="colorPrimaryDark">#0097A7</color>
     <color name="colorAccent">#FF4081</color>
     <color name="textColorPrimary">#ffffff</color>
+    <color name="radarColor">#0288D1</color>
+    <color name="radarValueColor">#4DD0E1</color>
     <color name="translucentStatusBarColor">#50000000</color>
 </resources>

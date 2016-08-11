@@ -38,34 +38,23 @@
                 android:layout_height="360dp"
                 app:src="@drawable/croatian_coast"/>
 
-            <com.app.learn.UI.PieView
-                android:id="@+id/pie_view"
-                android:layout_width="150dp"
-                android:layout_height="150dp"/>
-
-            <LinearLayout
+            <Button
+                android:id="@+id/pie_view_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/test_1_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="set data"/>
-
-                <Button
-                    android:id="@+id/test_2_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="set angle"/>
-            </LinearLayout>
+                android:text="PieView"/>
 
             <Button
                 android:id="@+id/path_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="path"/>
+                android:text="Path"/>
+
+            <Button
+                android:id="@+id/radar_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="RadarView"/>
 
         </LinearLayout>
 

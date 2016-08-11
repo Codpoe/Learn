@@ -7,7 +7,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 
-import com.app.learn.UI.PieView;
 import com.app.learn.model.PieData;
 
 import java.util.ArrayList;
@@ -23,14 +22,12 @@ public class CircularAnimActivity extends AppCompatActivity {
 
     @BindView(R.id.circular_anim_toolbar)
     Toolbar circularAnimToolbar;
-    @BindView(R.id.pie_view)
-    PieView mPieView;
-    @BindView(R.id.test_1_btn)
-    Button mTestBtn;
-    @BindView(R.id.test_2_btn)
-    Button test2Btn;
+    @BindView(R.id.pie_view_btn)
+    Button mPieViewBtn;
     @BindView(R.id.path_btn)
     Button mPathBtn;
+    @BindView(R.id.radar_view_btn)
+    Button mRadarViewBtn;
 
 
     @Override
@@ -57,29 +54,17 @@ public class CircularAnimActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.pie_view, R.id.test_1_btn, R.id.test_2_btn,R.id.path_btn})
+    @OnClick({R.id.pie_view_btn,R.id.path_btn, R.id.radar_view_btn})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.pie_view:
-                break;
-            case R.id.test_1_btn:
-                PieData pieData1 = new PieData("0", 30);
-                PieData pieData2 = new PieData("1", 80);
-                PieData pieData3 = new PieData("2", 40);
-                PieData pieData4 = new PieData("3", 60);
-                mPieDataList.clear();
-                mPieDataList.add(pieData1);
-                mPieDataList.add(pieData2);
-                mPieDataList.add(pieData3);
-                mPieDataList.add(pieData4);
-                mPieView.setPieDataList(mPieDataList);
-                mPieView.setStartAngle(30);
-                break;
-            case R.id.test_2_btn:
-                mPieView.setStartAngle(0);
+            case R.id.pie_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, PieViewActivity.class));
                 break;
             case R.id.path_btn:
                 startActivity(new Intent(CircularAnimActivity.this, PathActivity.class));
+                break;
+            case R.id.radar_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, RadarViewActivity.class));
                 break;
         }
     }

@@ -39,6 +39,10 @@
         </activity>
         <activity android:name=".PathActivity">
         </activity>
+        <activity android:name=".PieViewActivity">
+        </activity>
+        <activity android:name=".RadarViewActivity">
+        </activity>
     </application>
 
 </manifest>
