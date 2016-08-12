@@ -49,6 +49,8 @@
         </activity>
         <activity android:name=".CircleToHeartViewActivity">
         </activity>
+        <activity android:name=".TaiJiViewActivity">
+        </activity>
     </application>
 
 </manifest>

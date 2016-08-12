@@ -74,6 +74,12 @@
                 android:layout_height="wrap_content"
                 android:text="CircleToHeartView"/>
 
+            <Button
+                android:id="@+id/tai_ji_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TaiJiView"/>
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
