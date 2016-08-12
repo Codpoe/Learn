@@ -32,6 +32,8 @@ public class CircularAnimActivity extends AppCompatActivity {
     Button mBezierViewBtn;
     @BindView(R.id.bezier2_view_btn)
     Button mBezier2ViewBtn;
+    @BindView(R.id.circle_to_heart_view_btn)
+    Button mCircleToHeartViewBtn;
 
 
     @Override
@@ -63,7 +65,8 @@ public class CircularAnimActivity extends AppCompatActivity {
             R.id.path_btn,
             R.id.radar_view_btn,
             R.id.bezier_view_btn,
-            R.id.bezier2_view_btn
+            R.id.bezier2_view_btn,
+            R.id.circle_to_heart_view_btn
     })
     public void onClick(View view) {
         switch (view.getId()) {
@@ -81,6 +84,9 @@ public class CircularAnimActivity extends AppCompatActivity {
                 break;
             case R.id.bezier2_view_btn:
                 startActivity(new Intent(CircularAnimActivity.this, Bezier2ViewActivity.class));
+                break;
+            case R.id.circle_to_heart_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, CircleToHeartViewActivity.class));
                 break;
         }
     }

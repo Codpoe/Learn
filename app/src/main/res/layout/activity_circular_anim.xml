@@ -68,6 +68,12 @@
                 android:layout_height="wrap_content"
                 android:text="Bezier2View"/>
 
+            <Button
+                android:id="@+id/circle_to_heart_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CircleToHeartView"/>
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
