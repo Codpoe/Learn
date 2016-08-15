@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.app.learn.TaiJiViewActivity">
+    tools:context="com.app.learn.ArrowViewActivity">
 
     <android.support.design.widget.AppBarLayout
         app:theme="@style/ThemeOverlay.AppCompat.Dark"
@@ -14,18 +14,18 @@
         android:layout_height="wrap_content">
 
         <android.support.v7.widget.Toolbar
-            android:id="@+id/tai_ji_view_toolbar"
+            android:id="@+id/arrow_view_toolbar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back_white_24dp"
-            app:title="TaiJiView">
+            app:title="ArrowView">
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-    <com.app.learn.UI.TaiJiView
+    <com.app.learn.UI.ArrowView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

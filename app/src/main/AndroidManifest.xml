@@ -51,6 +51,8 @@
         </activity>
         <activity android:name=".TaiJiViewActivity">
         </activity>
+        <activity android:name=".ArrowViewActivity">
+        </activity>
     </application>
 
 </manifest>

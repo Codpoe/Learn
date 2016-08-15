@@ -36,6 +36,8 @@ public class CircularAnimActivity extends AppCompatActivity {
     Button mCircleToHeartViewBtn;
     @BindView(R.id.tai_ji_view_btn)
     Button mTaiJiViewBtn;
+    @BindView(R.id.arrow_view_btn)
+    Button mArrowViewBtn;
 
 
     @Override
@@ -69,7 +71,8 @@ public class CircularAnimActivity extends AppCompatActivity {
             R.id.bezier_view_btn,
             R.id.bezier2_view_btn,
             R.id.circle_to_heart_view_btn,
-            R.id.tai_ji_view_btn
+            R.id.tai_ji_view_btn,
+            R.id.arrow_view_btn
     })
     public void onClick(View view) {
         switch (view.getId()) {
@@ -93,6 +96,9 @@ public class CircularAnimActivity extends AppCompatActivity {
                 break;
             case R.id.tai_ji_view_btn:
                 startActivity(new Intent(CircularAnimActivity.this, TaiJiViewActivity.class));
+                break;
+            case R.id.arrow_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, ArrowViewActivity.class));
                 break;
         }
     }

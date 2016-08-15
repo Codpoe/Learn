@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
 
     <style name="AppTheme.Translucent" parent="Base.AppTheme">
-        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>
