@@ -59,12 +59,15 @@ public class ArrowView extends View {
             curValue = 0;
         }
 
-        measure.getPosTan(measure.getLength() * curValue, pos, tan);
+//        measure.getPosTan(measure.getLength() * curValue, pos, tan);
+//
+//        mMatrix.reset(); // 重置 Matrix
+//        float degree = (float) (Math.atan2(tan[1], tan[0]) * 180 / Math.PI); // 图片所需旋转角度
+//        mMatrix.postRotate(degree, mBitmap.getWidth() / 2, mBitmap.getHeight() / 2); // 旋转图片，矩阵后乘
+//        mMatrix.postTranslate(pos[0] - mBitmap.getWidth() / 2, pos[1] - mBitmap.getHeight() / 2); // 平移，矩阵后乘
 
-        mMatrix.reset(); // 重置 Matrix
-        float degree = (float) (Math.atan2(tan[1], tan[0]) * 180 / Math.PI); // 图片所需旋转角度
-        mMatrix.postRotate(degree, mBitmap.getWidth() / 2, mBitmap.getHeight() / 2); // 旋转图片
-        mMatrix.postTranslate(pos[0] - mBitmap.getWidth() / 2, pos[1] - mBitmap.getHeight() / 2); // 平移图片
+        measure.getMatrix(measure.getLength() * curValue, mMatrix, PathMeasure.POSITION_MATRIX_FLAG | PathMeasure.TANGENT_MATRIX_FLAG);
+        mMatrix.preTranslate(-mBitmap.getWidth() / 2, -mBitmap.getHeight() / 2); // 矩阵前乘
 
         canvas.drawPath(path, mPaint); // 绘制 Path
         canvas.drawBitmap(mBitmap, mMatrix, mPaint); // 绘制箭头
@@ -82,7 +85,7 @@ public class ArrowView extends View {
         mPaint.setAntiAlias(true);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;
+        options.inSampleSize = 4; // Arrow 图片缩放
         mBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.arrow, options);
         mMatrix = new Matrix();
 
