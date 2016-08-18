@@ -24,29 +24,30 @@ public class SearchView extends View {
     private float mCenterX;
     private float mCenterY;
 
+    // View 状态相关
     private static enum State { // 四个状态
         NONE, STARTING, SEARCHING, ENDING
     }
     private State mCurrentState = State.NONE; // 当前状态
 
+    // Path 相关
     private Path mSearchPath; //放大镜 Path
     private Path mCirclePath; // 搜索时的圆圈 Path
     private PathMeasure mMeasure;
 
+    // 动画相关
     private ValueAnimator mStartingAnimator; // 开始时的动画
     private ValueAnimator mSearchingAnimator; // 搜索时的动画
     private ValueAnimator mEndingAnimator; // 结束时的动画
     private float mAnimatorValue = 0; // 动画数值
     private int mDefaultDuration = 1500; // 动画时长
 
-    private ValueAnimator.AnimatorListener mAnimatorListener; // 动画监听器
+    private ValueAnimator.AnimatorListener mAnimatorListener; // 动画监听器，当前状态的动画结束时，发送 msg 给 Handler
     private ValueAnimator.AnimatorUpdateListener mUpdateListener; // 动画更新监听器
 
     private Handler mAnimatorHandler; // 用于转换动画状态
 
-    private boolean isOver;
-
-    private int mCount = 0;
+    private boolean isOver; // 结束标识
 
     public SearchView(Context context) {
         this(context, null);
@@ -59,9 +60,12 @@ public class SearchView extends View {
         initListener();
         initHandler();
         initAnimator();
-        
+
     }
 
+    /**
+     * 初始化 Paint
+     */
     private void initPaint() {
         mPaint = new Paint();
         mPaint.setColor(getResources().getColor(R.color.colorAccent));
@@ -71,6 +75,9 @@ public class SearchView extends View {
         mPaint.setAntiAlias(true);
     }
 
+    /**
+     * 初始化 Path
+     */
     private void initPath() {
         mSearchPath = new Path();
         mCirclePath = new Path();
@@ -89,6 +96,7 @@ public class SearchView extends View {
         mSearchPath.lineTo(pos[0], pos[1]); // 放大镜的手柄
     }
 
+    // 初始化动画
     private void initAnimator() {
         mStartingAnimator = ValueAnimator.ofFloat(0, 1).setDuration(mDefaultDuration);
         mSearchingAnimator = ValueAnimator.ofFloat(0, 1).setDuration(mDefaultDuration);
@@ -103,6 +111,7 @@ public class SearchView extends View {
         mEndingAnimator.addUpdateListener(mUpdateListener);
     }
 
+    // 初始化动画监听器
     private void initListener() {
         mAnimatorListener = new Animator.AnimatorListener() {
             @Override
@@ -135,6 +144,7 @@ public class SearchView extends View {
         };
     }
 
+    // 初始化 Handler
     private void initHandler() {
         mAnimatorHandler = new Handler() {
             @Override
@@ -206,6 +216,10 @@ public class SearchView extends View {
         }
     }
 
+    /**
+     * 提供给外部的接口方法
+     * 控制动画开始
+     */
     public void start() {
         if (mCurrentState == State.NONE) {
             isOver = false;
@@ -214,6 +228,9 @@ public class SearchView extends View {
         }
     }
 
+    /**
+     * 控制动画结束
+     */
     public void stop() {
         if (mCurrentState == State.SEARCHING) {
             isOver = true;

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
@@ -89,6 +90,14 @@ public class LearnView extends View {
         canvas.drawPath(path4, mPaint);
         mPaint.setColor(getResources().getColor(R.color.colorAccent));
         canvas.drawPath(path5, mPaint);
+
+        Path path6 = new Path();
+        path6.addCircle(0, 0, 300, Path.Direction.CW);
+        PathMeasure pathMeasure = new PathMeasure();
+        pathMeasure.setPath(path6, false);
+        Path dst = new Path();
+        pathMeasure.getSegment(pathMeasure.getLength() * 1.2f, pathMeasure.getLength() * 1.5f, dst, true);
+        canvas.drawPath(dst, mPaint);
 
     }
 }

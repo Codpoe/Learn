@@ -40,6 +40,8 @@ public class CircularAnimActivity extends AppCompatActivity {
     Button mArrowViewBtn;
     @BindView(R.id.search_view_btn)
     Button mSearchViewBtn;
+    @BindView(R.id.smiling_face_view_btn)
+    Button mSmilingFaceViewBtn;
 
 
     @Override
@@ -75,7 +77,8 @@ public class CircularAnimActivity extends AppCompatActivity {
             R.id.circle_to_heart_view_btn,
             R.id.tai_ji_view_btn,
             R.id.arrow_view_btn,
-            R.id.search_view_btn
+            R.id.search_view_btn,
+            R.id.smiling_face_view_btn
     })
     public void onClick(View view) {
         switch (view.getId()) {
@@ -106,6 +109,8 @@ public class CircularAnimActivity extends AppCompatActivity {
             case R.id.search_view_btn:
                 startActivity(new Intent(CircularAnimActivity.this, SearchViewActivity.class));
                 break;
+            case R.id.smiling_face_view_btn:
+                startActivity(new Intent(CircularAnimActivity.this, SmilingFaceViewActivity.class));
         }
     }
 

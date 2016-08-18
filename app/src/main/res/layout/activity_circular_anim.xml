@@ -92,6 +92,12 @@
                 android:layout_height="wrap_content"
                 android:text="SearchView"/>
 
+            <Button
+                android:id="@+id/smiling_face_view_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SmilingFaceView"/>
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>

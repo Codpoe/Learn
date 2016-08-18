@@ -59,6 +59,7 @@ public class ArrowView extends View {
             curValue = 0;
         }
 
+        // 吊炸天
 //        measure.getPosTan(measure.getLength() * curValue, pos, tan);
 //
 //        mMatrix.reset(); // 重置 Matrix
