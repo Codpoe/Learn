@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -30,30 +31,30 @@ public class SmilingFaceView extends View {
     private float mRadius; // 半径
 
     private Path mPath;
+    private Path dst1;
+    private Path dst2;
     private PathMeasure mMeasure;
 
     private static enum State {
         NONE, REFRESHING
     }
     private State mCurrentState = State.NONE; // 当前状态
-    private Handler mHandler;
 
     private ValueAnimator valueAnim1;
     private ValueAnimator valueAnim2;
-    private ValueAnimator valueAnim3;
-    private ValueAnimator valueAnim4;
-    private AnimatorSet mStartPAnimSet; // 起点动画
-    private AnimatorSet mStopPAnimSet; // 终点动画
+    private AnimatorSet mAnimSet; // 组合动画
     private int mDuration = 1000; // 动画时长
-    private float mStartPValue = 0; // 起点动画的数值
-    private float mStopPValue = 0; // 终点动画的数值
+    private float mStartPValue = 0.1f; // 起点动画的数值
+    private float mStopPValue = 0.1f; // 终点动画的数值
 
     private ValueAnimator.AnimatorListener mListener; // 动画监听器
-    private ValueAnimator.AnimatorUpdateListener mUpdateListener; // 动画数值监听器
+    private ValueAnimator.AnimatorUpdateListener mStartPUpdateListener; // 动画数值监听器
+    private ValueAnimator.AnimatorUpdateListener mStopPUpdateListener;
 
-    private boolean hasPoints; // 是否有两点
+    private Handler mHandler;
 
     private boolean isOver; // 是否结束
+    private boolean isPause = false;
 
     public SmilingFaceView(Context context) {
         this(context, null);
@@ -63,10 +64,14 @@ public class SmilingFaceView extends View {
         super(context, attrs);
         initPaint();
         initPath();
+        initListener();
         initAnimator();
+        initHandler();
     }
 
-    // 初始化 Paint
+    /**
+     * 初始化 Paint
+     */
     private void initPaint() {
         mPaint = new Paint();
         mTransparentPaint = new Paint();
@@ -80,64 +85,44 @@ public class SmilingFaceView extends View {
         mTransparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
     }
 
-    // 初始化 Path
+    /**
+     * 初始化 Path
+     */
     private void initPath() {
         mPath = new Path();
+        dst1 = new Path();
+        dst2 = new Path();
         mMeasure = new PathMeasure();
     }
 
-    // 初始化 Animator
-    private void initAnimator() {
-//        valueAnim1 = ValueAnimator.ofFloat(0.25f, 1).setDuration(750);
-//        valueAnim2 = ValueAnimator.ofFloat(0, 0.5f).setDuration(500);
-//        valueAnim3 = ValueAnimator.ofFloat(0.5f, 1f).setDuration(500);
-//        valueAnim4 = ValueAnimator.ofFloat(0, 0.25f).setDuration(250);
+    private void initListener() {
 
-        valueAnim1 = ValueAnimator.ofFloat(0.25f, 1);
-        valueAnim2 = ValueAnimator.ofFloat(1, 1.1f).setDuration(500);
-        valueAnim3 = ValueAnimator.ofFloat(1, 2.25f);
-        valueAnim4 = ValueAnimator.ofFloat(0.25f, 2.25f);
-
-        valueAnim1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        mStartPUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 mStartPValue = (float) animation.getAnimatedValue();
                 invalidate();
+
             }
-        });
-        valueAnim2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mStartPValue = (float) animation.getAnimatedValue();
-                invalidate();
-            }
-        });
-        valueAnim3.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        };
+
+        mStopPUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 mStopPValue = (float) animation.getAnimatedValue();
+                if (!isPause && (int) (mStopPValue * 10) == 4) {
+                    isPause = true;
+                    valueAnim1.pause();
+                }
+                if (isPause && (int) (mStopPValue * 10) == 6) {
+                    isPause = false;
+                    valueAnim1.resume();
+                }
                 invalidate();
             }
-        });
-//        valueAnim4.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                mStartPValue = (float) animation.getAnimatedValue();
-//                mStopPValue = (float) animation.getAnimatedValue();
-//                invalidate();
-//            }
-//        });
+        };
 
-        mStartPAnimSet = new AnimatorSet();
-        mStopPAnimSet = new AnimatorSet();
-
-        mStartPAnimSet.play(valueAnim1).before(valueAnim2).before(valueAnim3).before(valueAnim4);
-        mStartPAnimSet.setDuration(2000);
-
-        mStopPAnimSet.play(valueAnim3);
-        mStopPAnimSet.setDuration(1500);
-
-        mStartPAnimSet.addListener(new Animator.AnimatorListener() {
+        mListener = new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
 
@@ -145,12 +130,7 @@ public class SmilingFaceView extends View {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (!isOver) {
-                    mStartPAnimSet.start();
-                    mStopPAnimSet.start();
-                } else {
-                    mCurrentState = State.NONE;
-                }
+                mHandler.sendEmptyMessage(0);
             }
 
             @Override
@@ -162,7 +142,45 @@ public class SmilingFaceView extends View {
             public void onAnimationRepeat(Animator animation) {
 
             }
-        });
+        };
+
+    }
+
+    /**
+     * 初始化 Handler
+     */
+    private void initHandler() {
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (mCurrentState) {
+                    case REFRESHING:
+                        if (!isOver) {
+                            mAnimSet.start();
+                        } else {
+                            mCurrentState = State.NONE;
+                            invalidate();
+                        }
+                }
+            }
+        };
+    }
+
+    /**
+     * 初始化 Animator
+     */
+    private void initAnimator() {
+        valueAnim1 = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(1500);
+        valueAnim2 = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(1500);
+        mAnimSet = new AnimatorSet();
+        mAnimSet.play(valueAnim1).with(valueAnim2);
+
+        valueAnim1.addUpdateListener(mStartPUpdateListener);
+        valueAnim2.addUpdateListener(mStopPUpdateListener);
+
+        valueAnim1.addListener(mListener);
+
     }
 
     @Override
@@ -179,31 +197,27 @@ public class SmilingFaceView extends View {
 
         canvas.translate(mCenterX, mCenterY);
 
-        RectF rectF = new RectF(-mRadius, -mRadius, mRadius, mRadius);
-        mPath.addCircle(0, 0, mRadius, Path.Direction.CW);
+        RectF rectF1 = new RectF(-mRadius, -mRadius, mRadius, mRadius);
+        mPath.addArc(rectF1, 0, 359.99f);
+        mPath.arcTo(rectF1, 359.99f, 359.99f, false);
+        mPath.arcTo(rectF1, 359.98f, 180.02f, false);
         mMeasure.setPath(mPath, false);
-
-        hasPoints = false;
 
         switch (mCurrentState) {
             case NONE:
-                Path dst1 = new Path();
-                mMeasure.getSegment(0, mMeasure.getLength() * 0.5f, dst1, true);
+                mMeasure.getSegment(0, mMeasure.getLength() * 0.2f, dst1, true);
                 canvas.drawPath(dst1, mPaint);
                 drawPoint1(canvas, mPaint);
                 drawPoint2(canvas, mPaint);
                 break;
             case REFRESHING:
-                Path dst2 = new Path();
-                mMeasure.getSegment(mMeasure.getLength() * mStartPValue, mMeasure.getLength() * mStopPValue + 10, dst2, true);
+                dst2.reset();
+                mMeasure.getSegment(mMeasure.getLength() * mStartPValue, mMeasure.getLength() * (mStopPValue + 0.0001f), dst2, true);
                 canvas.drawPath(dst2, mPaint);
-                if (!hasPoints) {
-
-                }
-                if (mStopPValue >= 0.875f) {
+                if (mStopPValue >= 0.25f && mStopPValue <= 0.65f) {
                     drawPoint1(canvas, mPaint);
                 }
-                if (mStopPValue >= 1.125f) {
+                if (mStopPValue >= 0.35f && mStopPValue <= 0.75f) {
                     drawPoint2(canvas, mPaint);
                 }
                 break;
@@ -227,8 +241,7 @@ public class SmilingFaceView extends View {
         if (mCurrentState == State.NONE) {
             isOver = false;
             mCurrentState = State.REFRESHING;
-            mStartPAnimSet.start();
-            mStopPAnimSet.start();
+            mAnimSet.start();
         }
     }
 
