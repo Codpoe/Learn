@@ -8,8 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
@@ -24,7 +22,7 @@ import com.app.learn.R;
 public class SmilingFaceView extends View {
 
     private Paint mPaint; // 画笔
-    private Paint mTransparentPaint; // 透明画笔
+    int mColor;
 
     private float mCenterX; // 中心 X
     private float mCenterY; // 中心 Y
@@ -33,25 +31,28 @@ public class SmilingFaceView extends View {
     private Path mPath;
     private Path dst1;
     private Path dst2;
+    private Path dst3;
     private PathMeasure mMeasure;
 
-    private static enum State {
-        NONE, REFRESHING
+    private static enum State { // 三个状态：初始，刷新中，刷新完成
+        NONE, REFRESHING, OK
     }
     private State mCurrentState = State.NONE; // 当前状态
+    private Handler mHandler; // 用于状态切换
 
-    private ValueAnimator valueAnim1;
-    private ValueAnimator valueAnim2;
-    private AnimatorSet mAnimSet; // 组合动画
-    private int mDuration = 1000; // 动画时长
+    private ValueAnimator mStartPAnim; // 起点动画
+    private ValueAnimator mStopPAnim; // 终点动画
+    private ValueAnimator mOkAnim; // 刷新完成的动画
+    private AnimatorSet mAnimSet; // 刷新的组合动画
+    private int mDuration = 1500; // 动画时长
     private float mStartPValue = 0.1f; // 起点动画的数值
     private float mStopPValue = 0.1f; // 终点动画的数值
+    private float mOkValue = 0.1f; // 刷新完成动画的数值
 
     private ValueAnimator.AnimatorListener mListener; // 动画监听器
-    private ValueAnimator.AnimatorUpdateListener mStartPUpdateListener; // 动画数值监听器
-    private ValueAnimator.AnimatorUpdateListener mStopPUpdateListener;
-
-    private Handler mHandler;
+    private ValueAnimator.AnimatorUpdateListener mStartPUpdateListener; // 起点的动画数值监听器
+    private ValueAnimator.AnimatorUpdateListener mStopPUpdateListener; // 终点的动画数值监听器
+    private ValueAnimator.AnimatorUpdateListener mOkUpdateListener; // 刷新完成的动画监听器
 
     private boolean isOver; // 是否结束
     private boolean isPause = false;
@@ -69,20 +70,74 @@ public class SmilingFaceView extends View {
         initHandler();
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mCenterX = w / 2;
+        mCenterY = h / 2;
+        mRadius = Math.min(mCenterX, mCenterY) * 0.8f;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        canvas.translate(mCenterX, mCenterY); // 移到画布中心
+
+        // 添加Path
+        RectF rectF1 = new RectF(-mRadius, -mRadius, mRadius, mRadius);
+        mPath.addArc(rectF1, 0, 359.99f);
+        mPath.arcTo(rectF1, 359.99f, 359.99f, false);
+        mPath.arcTo(rectF1, 359.98f, 180.02f, false);
+        mMeasure.setPath(mPath, false);
+
+        switch (mCurrentState) {
+            case NONE:
+                mMeasure.getSegment(0, mMeasure.getLength() * 0.2f, dst1, true);
+                canvas.drawPath(dst1, mPaint);
+                drawPoint1(canvas);
+                drawPoint2(canvas);
+                break;
+            case REFRESHING:
+                dst2.reset();
+                mMeasure.getSegment(mMeasure.getLength() * mStartPValue, mMeasure.getLength() * mStopPValue, dst2, true);
+                canvas.drawPath(dst2, mPaint);
+                if (mStopPValue >= 0.25f && mStopPValue <= 0.65f) {
+                    drawPoint1(canvas);
+                }
+                if (mStopPValue >= 0.35f && mStopPValue <= 0.75f) {
+                    drawPoint2(canvas);
+                }
+                break;
+            case OK:
+                dst3.reset();
+                mMeasure.getSegment(
+                        mMeasure.getLength() * (-mOkValue + 0.1f),
+                        mMeasure.getLength() * (mOkValue + 0.1f),
+                        dst3,
+                        true
+                );
+                canvas.drawPath(dst3, mPaint);
+                if (mOkValue == 0.1f) {
+                    drawPoint1(canvas);
+                    drawPoint2(canvas);
+                }
+                break;
+        }
+    }
+
     /**
      * 初始化 Paint
      */
     private void initPaint() {
         mPaint = new Paint();
-        mTransparentPaint = new Paint();
-        mPaint.setColor(getResources().getColor(R.color.colorAccent));
+        mColor = getResources().getColor(R.color.colorAccent);
+        mPaint.setColor(mColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setAntiAlias(true);
 
-        mTransparentPaint.set(mPaint);
-        mTransparentPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
     }
 
     /**
@@ -92,9 +147,13 @@ public class SmilingFaceView extends View {
         mPath = new Path();
         dst1 = new Path();
         dst2 = new Path();
+        dst3 = new Path();
         mMeasure = new PathMeasure();
     }
 
+    /**
+     * 初始化 Listener
+     */
     private void initListener() {
 
         mStartPUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
@@ -109,15 +168,23 @@ public class SmilingFaceView extends View {
         mStopPUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mStopPValue = (float) animation.getAnimatedValue();
+                mStopPValue = (float) animation.getAnimatedValue() + 0.001f;
                 if (!isPause && (int) (mStopPValue * 10) == 4) {
                     isPause = true;
-                    valueAnim1.pause();
+                    mStartPAnim.pause();
                 }
                 if (isPause && (int) (mStopPValue * 10) == 6) {
                     isPause = false;
-                    valueAnim1.resume();
+                    mStartPAnim.resume();
                 }
+                invalidate();
+            }
+        };
+
+        mOkUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mOkValue = (float) animation.getAnimatedValue();
                 invalidate();
             }
         };
@@ -159,9 +226,13 @@ public class SmilingFaceView extends View {
                         if (!isOver) {
                             mAnimSet.start();
                         } else {
-                            mCurrentState = State.NONE;
-                            invalidate();
+                            mCurrentState = State.OK;
+                            mOkAnim.start();
                         }
+                        break;
+                    case OK:
+                        mCurrentState = State.NONE;
+                        break;
                 }
             }
         };
@@ -171,71 +242,44 @@ public class SmilingFaceView extends View {
      * 初始化 Animator
      */
     private void initAnimator() {
-        valueAnim1 = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(1500);
-        valueAnim2 = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(1500);
+        mStartPAnim = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(mDuration);
+        mStopPAnim = ValueAnimator.ofFloat(0.1f, 0.9f).setDuration(mDuration);
         mAnimSet = new AnimatorSet();
-        mAnimSet.play(valueAnim1).with(valueAnim2);
+        mAnimSet.play(mStartPAnim).with(mStopPAnim);
 
-        valueAnim1.addUpdateListener(mStartPUpdateListener);
-        valueAnim2.addUpdateListener(mStopPUpdateListener);
+        mOkAnim = ValueAnimator.ofFloat(0, 0.1f).setDuration(mDuration / 5);
 
-        valueAnim1.addListener(mListener);
+        mStartPAnim.addUpdateListener(mStartPUpdateListener);
+        mStopPAnim.addUpdateListener(mStopPUpdateListener);
+        mOkAnim.addUpdateListener(mOkUpdateListener);
+
+        mAnimSet.addListener(mListener);
+        mOkAnim.addListener(mListener);
 
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mCenterX = w / 2;
-        mCenterY = h / 2;
-        mRadius = Math.min(mCenterX, mCenterY) * 0.9f;
+    /**
+     * 画点 1，即左眼
+     * @param canvas
+     */
+    private void drawPoint1(Canvas canvas) {
+        canvas.drawPoint(-mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), mPaint);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        canvas.translate(mCenterX, mCenterY);
-
-        RectF rectF1 = new RectF(-mRadius, -mRadius, mRadius, mRadius);
-        mPath.addArc(rectF1, 0, 359.99f);
-        mPath.arcTo(rectF1, 359.99f, 359.99f, false);
-        mPath.arcTo(rectF1, 359.98f, 180.02f, false);
-        mMeasure.setPath(mPath, false);
-
-        switch (mCurrentState) {
-            case NONE:
-                mMeasure.getSegment(0, mMeasure.getLength() * 0.2f, dst1, true);
-                canvas.drawPath(dst1, mPaint);
-                drawPoint1(canvas, mPaint);
-                drawPoint2(canvas, mPaint);
-                break;
-            case REFRESHING:
-                dst2.reset();
-                mMeasure.getSegment(mMeasure.getLength() * mStartPValue, mMeasure.getLength() * (mStopPValue + 0.0001f), dst2, true);
-                canvas.drawPath(dst2, mPaint);
-                if (mStopPValue >= 0.25f && mStopPValue <= 0.65f) {
-                    drawPoint1(canvas, mPaint);
-                }
-                if (mStopPValue >= 0.35f && mStopPValue <= 0.75f) {
-                    drawPoint2(canvas, mPaint);
-                }
-                break;
-        }
-    }
-
-    // 画点 1，即左眼
-    private void drawPoint1(Canvas canvas, Paint paint) {
-        canvas.drawPoint(-mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), paint);
-    }
-
-    // 画点 2，即右眼
-    private void drawPoint2(Canvas canvas, Paint paint) {
-        canvas.drawPoint(mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), paint);
+    /**
+     * 画点 2，即右眼
+     * @param canvas
+     */
+    private void drawPoint2(Canvas canvas) {
+        canvas.drawPoint(mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), mPaint);
     }
 
     /**
      * 提供给外部的方法
+     */
+
+    /**
+     * 开始刷新
      */
     public void start() {
         if (mCurrentState == State.NONE) {
@@ -245,8 +289,33 @@ public class SmilingFaceView extends View {
         }
     }
 
+    /**
+     * 结束刷新
+     */
     public void stop() {
         isOver = true;
+    }
+
+    /**
+     * 设置动画时长
+     * @param duration
+     */
+    public void setDuration(int duration) {
+        mDuration = duration;
+        mStartPAnim.setDuration(mDuration);
+        mStopPAnim.setDuration(mDuration);
+        mOkAnim.setDuration(mDuration / 5);
+        invalidate();
+    }
+
+    /**
+     * 设置画笔颜色
+     * @param color
+     */
+    public void setColor(int color) {
+        mColor = color;
+        mPaint.setColor(mColor);
+        invalidate();
     }
 
 }

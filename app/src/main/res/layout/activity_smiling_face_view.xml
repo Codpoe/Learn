@@ -26,22 +26,51 @@
 
     <com.app.learn.UI.SmilingFaceView
         android:id="@+id/smiling_face_view"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginTop="50dp"
         android:layout_gravity="center"/>
 
     <Button
         android:id="@+id/smiling_start_btn"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
         android:text="Start"/>
 
     <Button
         android:id="@+id/smiling_stop_btn"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Stop"/>
+
+    <Spinner
+        android:id="@+id/smiling_color_spinner"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:spinnerMode="dropdown"
+        android:entries="@array/colors"/>
+
+    <TextView
+        android:id="@+id/duration_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:textSize="25sp"
+        android:textColor="@color/colorAccent"
+        android:text="1500"/>
+
+    <SeekBar
+        android:id="@+id/smiling_set_duration_seekbar"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:max="3000"
+        android:progress="1500"/>
 
 </LinearLayout>
