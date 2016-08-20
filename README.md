@@ -38,4 +38,4 @@
 
 - 微博：[@Codpoe](http://weibo.com/2757541610/)
 - 邮箱：codpoe.me@gmail.com
-- 博客：[Codpoe的个人博客](codpoe.me)
+- 博客：[Codpoe的个人博客](http://codpoe.me/)
