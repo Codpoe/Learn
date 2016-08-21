@@ -74,7 +74,6 @@ public class SmilingFaceViewActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 

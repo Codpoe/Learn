@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -22,11 +23,15 @@ import com.app.learn.R;
 public class SmilingFaceView extends View {
 
     private Paint mPaint; // 画笔
-    int mColor;
+    private int mColor;
 
+    private int mWidth = 60; // 默认宽度
+    private int mHeight = 60; // 默认高度
     private float mCenterX; // 中心 X
     private float mCenterY; // 中心 Y
     private float mRadius; // 半径
+    private float[] mLPointPos = new float[2]; // 左点位置
+    private float[] mRPointPos = new float[2]; // 右点位置
 
     private Path mPath;
     private Path dst1;
@@ -34,7 +39,7 @@ public class SmilingFaceView extends View {
     private Path dst3;
     private PathMeasure mMeasure;
 
-    private static enum State { // 三个状态：初始，刷新中，刷新完成
+    private enum State { // 三个状态：初始，刷新中，刷新完成
         NONE, REFRESHING, OK
     }
     private State mCurrentState = State.NONE; // 当前状态
@@ -44,7 +49,7 @@ public class SmilingFaceView extends View {
     private ValueAnimator mStopPAnim; // 终点动画
     private ValueAnimator mOkAnim; // 刷新完成的动画
     private AnimatorSet mAnimSet; // 刷新的组合动画
-    private int mDuration = 1500; // 动画时长
+    private int mDuration; // 默认动画时长
     private float mStartPValue = 0.1f; // 起点动画的数值
     private float mStopPValue = 0.1f; // 终点动画的数值
     private float mOkValue = 0.1f; // 刷新完成动画的数值
@@ -55,7 +60,7 @@ public class SmilingFaceView extends View {
     private ValueAnimator.AnimatorUpdateListener mOkUpdateListener; // 刷新完成的动画监听器
 
     private boolean isOver; // 是否结束
-    private boolean isPause = false;
+    private boolean isPause = false; // 是否暂停
 
     public SmilingFaceView(Context context) {
         this(context, null);
@@ -63,6 +68,7 @@ public class SmilingFaceView extends View {
 
     public SmilingFaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        initAttrs(attrs);
         initPaint();
         initPath();
         initListener();
@@ -71,12 +77,36 @@ public class SmilingFaceView extends View {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mCenterX = w / 2;
-        mCenterY = h / 2;
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // 获取宽度的模式与大小
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        // 获取高度的模式与大小
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        // 设置宽高
+        setMeasuredDimension(measureWidth(widthMode, width), measureHeight(heightMode, height));
+
+        mCenterX = mWidth / 2;
+        mCenterY = mHeight / 2;
         mRadius = Math.min(mCenterX, mCenterY) * 0.8f;
+        // 计算左右两点的位置
+        mLPointPos[0] = -mRadius * (float) (Math.cos(45));
+        mLPointPos[1] = -mRadius * (float) (Math.sin(45));
+        mRPointPos[0] = mRadius * (float) (Math.cos(45));
+        mRPointPos[1] = -mRadius * (float) (Math.sin(45));
     }
+
+
+//    @Override
+//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//        super.onSizeChanged(w, h, oldw, oldh);
+//        mWidth = w;
+//        mHeight = h;
+//        mCenterX = w / 2;
+//        mCenterY = h / 2;
+//        mRadius = Math.min(mCenterX, mCenterY) * 0.8f;
+//    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -95,18 +125,18 @@ public class SmilingFaceView extends View {
             case NONE:
                 mMeasure.getSegment(0, mMeasure.getLength() * 0.2f, dst1, true);
                 canvas.drawPath(dst1, mPaint);
-                drawPoint1(canvas);
-                drawPoint2(canvas);
+                drawLPoint(canvas);
+                drawRPoint(canvas);
                 break;
             case REFRESHING:
                 dst2.reset();
                 mMeasure.getSegment(mMeasure.getLength() * mStartPValue, mMeasure.getLength() * mStopPValue, dst2, true);
                 canvas.drawPath(dst2, mPaint);
                 if (mStopPValue >= 0.25f && mStopPValue <= 0.65f) {
-                    drawPoint1(canvas);
+                    drawLPoint(canvas);
                 }
                 if (mStopPValue >= 0.35f && mStopPValue <= 0.75f) {
-                    drawPoint2(canvas);
+                    drawRPoint(canvas);
                 }
                 break;
             case OK:
@@ -119,10 +149,18 @@ public class SmilingFaceView extends View {
                 );
                 canvas.drawPath(dst3, mPaint);
                 if (mOkValue == 0.1f) {
-                    drawPoint1(canvas);
-                    drawPoint2(canvas);
+                    drawLPoint(canvas);
+                    drawRPoint(canvas);
                 }
                 break;
+        }
+    }
+
+    private void initAttrs(AttributeSet attrs) {
+        if (attrs != null) {
+            TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.SmilingFaceView);
+            mColor = array.getColor(R.styleable.SmilingFaceView_smiling_color, getResources().getColor(R.color.colorPrimary));
+            mDuration = array.getInt(R.styleable.SmilingFaceView_smiling_duration, mDuration);
         }
     }
 
@@ -131,7 +169,6 @@ public class SmilingFaceView extends View {
      */
     private void initPaint() {
         mPaint = new Paint();
-        mColor = getResources().getColor(R.color.colorAccent);
         mPaint.setColor(mColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10);
@@ -259,23 +296,59 @@ public class SmilingFaceView extends View {
     }
 
     /**
+     * 根据测量模式返回宽度
+     * @param mode
+     * @param width
+     * @return
+     */
+    private int measureWidth(int mode, int width) {
+        switch (mode) {
+            case MeasureSpec.UNSPECIFIED:
+            case MeasureSpec.AT_MOST:
+                break;
+            case MeasureSpec.EXACTLY:
+                mWidth = width;
+                break;
+        }
+        return mWidth;
+    }
+
+    /**
+     * 根据测量模式返回高度
+     * @param mode
+     * @param height
+     * @return
+     */
+    private int measureHeight(int mode, int height) {
+        switch (mode) {
+            case MeasureSpec.UNSPECIFIED:
+            case MeasureSpec.AT_MOST:
+                break;
+            case MeasureSpec.EXACTLY:
+                mHeight = height;
+                break;
+        }
+        return mHeight;
+    }
+
+    /**
      * 画点 1，即左眼
      * @param canvas
      */
-    private void drawPoint1(Canvas canvas) {
-        canvas.drawPoint(-mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), mPaint);
+    private void drawLPoint(Canvas canvas) {
+        canvas.drawPoint(mLPointPos[0], mLPointPos[1], mPaint);
     }
 
     /**
      * 画点 2，即右眼
      * @param canvas
      */
-    private void drawPoint2(Canvas canvas) {
-        canvas.drawPoint(mRadius * (float) (Math.cos(45)), -mRadius * (float) (Math.sin(45)), mPaint);
+    private void drawRPoint(Canvas canvas) {
+        canvas.drawPoint(mRPointPos[0], mRPointPos[1], mPaint);
     }
 
     /**
-     * 提供给外部的方法
+     * 提供给外部的方法 ↓↓↓
      */
 
     /**
@@ -293,11 +366,13 @@ public class SmilingFaceView extends View {
      * 结束刷新
      */
     public void stop() {
-        isOver = true;
+        if (mCurrentState == State.REFRESHING) {
+            isOver = true;
+        }
     }
 
     /**
-     * 设置动画时长
+     * 动态设置动画时长
      * @param duration
      */
     public void setDuration(int duration) {
@@ -305,17 +380,15 @@ public class SmilingFaceView extends View {
         mStartPAnim.setDuration(mDuration);
         mStopPAnim.setDuration(mDuration);
         mOkAnim.setDuration(mDuration / 5);
-        invalidate();
     }
 
     /**
-     * 设置画笔颜色
+     * 动态设置画笔颜色
      * @param color
      */
     public void setColor(int color) {
         mColor = color;
         mPaint.setColor(mColor);
-        invalidate();
     }
 
 }
